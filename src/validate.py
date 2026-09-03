@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class TicketValidator:
+    """Validates support tickets and filters out invalid entries."""
+
     def __init__(self, tickets: List[Dict]):
         self.tickets = tickets
         self.invalid_tickets = {}

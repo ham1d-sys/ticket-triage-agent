@@ -1,9 +1,9 @@
-import csv
 import logging
 from pathlib import Path
 
 from tenacity import RetryError
 
+from ticket_io import load_support_tickets, write_invalid_tickets
 from process import TriageProcessor
 from validate import TicketValidator
 
@@ -12,17 +12,14 @@ logger = logging.getLogger(__name__)
 
 EXPECTED_FIELDS = ("sender", "subject", "body", "received_at")
 EXPECTED_TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
-raw_tickets_path = Path(__file__).resolve().parent.parent / "data" / "input" / "raw_support_tickets.csv"
+support_tickets_path = Path(__file__).resolve().parent.parent / "data" / "input" / "support_tickets.csv"
 output_path = Path(__file__).resolve().parent.parent / "data" / "output"
 
 
 def main():
-    with open(raw_tickets_path, "r", encoding='UTF-8', newline='') as raw_tickets_file:
-        raw_support_tickets = list(
-            csv.DictReader(raw_tickets_file)
-        )
+    support_tickets = load_support_tickets(support_tickets_path)
 
-    ticket_validator = TicketValidator(raw_support_tickets)
+    ticket_validator = TicketValidator(support_tickets)
     ticket_validator.ensure_expected_fields_present_and_non_empty(EXPECTED_FIELDS)
     ticket_validator.ensure_body_in_valid_tickets_gte_3_chars()
     ticket_validator.ensure_valid_received_at_timestamp(EXPECTED_TIMESTAMP_FORMAT)
@@ -38,11 +35,8 @@ def main():
         logger.warning(f"{e.__name__}: {e}. Batch aborted.")
         return
 
-    with open(output_path / "invalid_tickets.csv", "w", encoding='UTF-8', newline='') as invalids_file:
-        fieldnames = ["content", "reason"]
-        writer = csv.DictWriter(invalids_file, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(invalid_tickets.values())
+    invalid_tickets_header = ["content", "reason"]
+    write_invalid_tickets(invalid_tickets, invalid_tickets_header, output_path)
     triage_processor.write_outputs()
 
 

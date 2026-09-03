@@ -1,14 +1,20 @@
-# Ticket Triage Agent
+# Support Ticket Triage Agent
 
-An agentic pipeline that validates and triages tickets using the OpenAI API. Each valid ticket is classified by category
+An agentic pipeline that validates and triages support tickets using the OpenAI API. Each valid ticket is classified by category
 and urgency, with a short explanation of the decision. Results are exported as CSV files.
 
 ## How It Works
 
 1. **Load** — Reads support tickets from a CSV file.
-2. **Validate** — Checks each ticket against the validation rules, including required fields and minimum field lengths.
-3. **Triage** — Sends valid tickets to the OpenAI API to determine their category, urgency, and triage reason.
-4. **Write** — Exports triaged, invalid, and needs-review tickets to separate CSV files.
+2. **Validate and clean up** — Applies the validation rules to each ticket:
+   - Ensures all expected fields are present and non-empty.
+   - Ensures the body of a valid ticket contains at least 3 characters.
+   - Ensures `received_at` is a valid timestamp.
+   - Ensures the sender is valid.
+   
+   Invalid tickets are removed from the in-memory ticket collection and retained for separate reporting.
+3. **Triage** — Sends the remaining valid tickets to the OpenAI API to determine their category, urgency, and triage reason.
+4. **Write** — Exports triaged tickets, invalid tickets, and valid tickets requiring review to separate CSV files.
 
 ## Prerequisites
 

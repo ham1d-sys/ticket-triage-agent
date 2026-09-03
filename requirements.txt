@@ -1,4 +1,5 @@
 dotenv
 openai
-tenacity
+pydantic
 pytest
+tenacity
