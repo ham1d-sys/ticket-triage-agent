@@ -8,7 +8,7 @@ def load_support_tickets(tickets_path):
         tickets = list(
             csv.DictReader(tickets_file)
         )
-        logger.info(f"Loaded tickets from {tickets_path}.")
+        logger.info(f"Loaded tickets from '{tickets_path}'.")
     return tickets
 
 def write_invalid_tickets(invalid_tickets, fieldnames, output_path):
@@ -18,4 +18,4 @@ def write_invalid_tickets(invalid_tickets, fieldnames, output_path):
             writer = csv.DictWriter(invalid_tickets_file, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(invalid_tickets.values())
-            logger.info(f"Wrote invalid tickets to {invalid_tickets_path}.")
+            logger.info(f"Wrote invalid tickets to '{invalid_tickets_path}'.")

@@ -98,7 +98,7 @@ class TriageProcessor:
                 writer = csv.DictWriter(needs_review_file, fieldnames=fieldnames)
                 writer.writeheader()
                 writer.writerows(self.needs_review)
-            logger.info(f"Wrote needs-review tickets to {needs_review_path}")
+            logger.info(f"Wrote needs-review tickets to '{needs_review_path}'")
 
         if self.triaged:
             triaged_path = self.output_path / "triaged.csv"
@@ -107,4 +107,4 @@ class TriageProcessor:
                 writer = csv.DictWriter(triaged_file, fieldnames=fieldnames)
                 writer.writeheader()
                 writer.writerows(self.triaged)
-                logger.info(f"Wrote triage results to {triaged_path}")
+                logger.info(f"Wrote triage results to '{triaged_path}'")
