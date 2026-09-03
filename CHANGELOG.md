@@ -11,7 +11,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Load support tickets from a CSV file.
+- Load tickets from a CSV file.
 - Validate tickets against the configured validation rules.
 - Triage valid tickets by category, urgency, and reason.
 - Export triaged, invalid, and needs-review tickets to separate CSV files.
