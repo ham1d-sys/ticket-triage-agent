@@ -28,8 +28,8 @@ You can create an API key from the [OpenAI dashboard](https://platform.openai.co
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/ham1d-sys/ticket-triage-agent.git
-cd ticket-triage-agent
+git clone https://github.com/ham1d-sys/support-ticket-triage-agent.git
+cd support-ticket-triage-agent
 ```
 
 ### 2. Create and activate a virtual environment
