@@ -1,0 +1,4 @@
+content,category,urgency,reason
+"{'sender': 'maria.k@example.com', 'subject': ""Can't log in"", 'body': 'I get invalid credentials every time I try.', 'received_at': '2026-08-19 07:12:00'}",other,medium,User is unable to log in due to repeated invalid-credentials errors; no evidence of a product bug beyond an authentication issue.
+"{'sender': 't.becker@freelance.net', 'subject': 'Thanks for the help', 'body': 'Support resolved my issue fast, appreciate it.', 'received_at': '2026-08-19 10:22:00'}",other,low,The message is positive feedback thanking support and does not report an issue or request.
+"{'sender': 'noreply@dealzhub.biz', 'subject': 'Reward', 'body': 'You have been selected for a free gift card.', 'received_at': '2026-08-19 08:15:00'}",spam,low,"Unsolicited free gift card message from a promotional-looking sender, with no support issue described."
