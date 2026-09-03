@@ -1,12 +1,12 @@
 import csv
-from logging import getLogger
 import os
+from logging import getLogger
 from pathlib import Path
-from pydantic import BaseModel
 from typing import List, Dict
 
 from dotenv import load_dotenv
 from openai import OpenAI, APIConnectionError, APITimeoutError
+from pydantic import BaseModel
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter, RetryError
 
 logger = getLogger(__name__)
@@ -28,8 +28,10 @@ class Classification(BaseModel):
     urgency: str
     reason: str
 
+
 class TriageProcessor:
     """Triage tickets."""
+
     def __init__(self, tickets: List[Dict], output_path: Path):
         self.tickets = tickets
         self.triaged = []
@@ -77,8 +79,10 @@ class TriageProcessor:
                         self.triaged.append({"content": ticket, **response.output_parsed.model_dump()})
                         rows_status.append(True)
             except (APIConnectionError, APITimeoutError) as e:
-                self.needs_review.append({"content": ticket, "reason": f"{e.__name__} after {stop_count} triage attempts."})
-                if len(rows_status) > stop_count and not any([i for n, i in enumerate(rows_status, start=1) if n >= (len(rows_status) - stop_count)]):
+                self.needs_review.append(
+                    {"content": ticket, "reason": f"{e.__name__} after {stop_count} triage attempts."})
+                if len(rows_status) > stop_count and not any(
+                        [i for n, i in enumerate(rows_status, start=1) if n >= (len(rows_status) - stop_count)]):
                     raise RetryError(f"Hit {stop_count} consecutive API connection or timeout errors")
                 continue
 

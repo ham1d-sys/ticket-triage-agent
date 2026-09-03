@@ -1,6 +1,7 @@
 # Ticket Triage Agent
 
-An agentic pipeline that validates and triages tickets using the OpenAI API. Each valid ticket is classified by category and urgency, with a short explanation of the decision. Results are exported as CSV files.
+An agentic pipeline that validates and triages tickets using the OpenAI API. Each valid ticket is classified by category
+and urgency, with a short explanation of the decision. Results are exported as CSV files.
 
 ## How It Works
 
@@ -104,7 +105,8 @@ Depending on the input data and processing results, the pipeline may generate on
 - `needs_review.csv` — Tickets that could not be triaged because the model refused the request or the API request failed
 
 > [!NOTE]
-> If API connection errors occur for the configured maximum number of consecutive attempts, processing is aborted for the batch.
+> If API connection errors occur for the configured maximum number of consecutive attempts, processing is aborted for
+the batch.
 
 ## Output Format
 
@@ -112,31 +114,32 @@ Depending on the input data and processing results, the pipeline may generate on
 
 Contains successfully processed tickets and their triage results.
 
-| content | category | urgency | reason |
-|---|---|---|---|
-| `{'sender': 'maria.k@example.com', 'subject': "Can't log in", 'body': 'I get invalid credentials every time I try.', 'received_at': '2026-08-19 07:12:00'}` | `other` | `medium` | User is unable to log in due to repeated invalid-credentials errors; no evidence of a product bug beyond an authentication issue. |
-| `{'sender': 't.becker@freelance.net', 'subject': 'Thanks for the help', 'body': 'Support resolved my issue fast, appreciate it.', 'received_at': '2026-08-19 10:22:00'}` | `other` | `low` | The message is positive feedback thanking support and does not report an issue or request. |
-| `{'sender': 'noreply@dealzhub.biz', 'subject': 'Reward', 'body': 'You have been selected for a free gift card.', 'received_at': '2026-08-19 08:15:00'}` | `spam` | `low` | Unsolicited free gift card message from a promotional-looking sender, with no support issue described. |
+| content                                                                                                                                                                  | category | urgency  | reason                                                                                                                            |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|----------|-----------------------------------------------------------------------------------------------------------------------------------|
+| `{'sender': 'maria.k@example.com', 'subject': "Can't log in", 'body': 'I get invalid credentials every time I try.', 'received_at': '2026-08-19 07:12:00'}`              | `other`  | `medium` | User is unable to log in due to repeated invalid-credentials errors; no evidence of a product bug beyond an authentication issue. |
+| `{'sender': 't.becker@freelance.net', 'subject': 'Thanks for the help', 'body': 'Support resolved my issue fast, appreciate it.', 'received_at': '2026-08-19 10:22:00'}` | `other`  | `low`    | The message is positive feedback thanking support and does not report an issue or request.                                        |
+| `{'sender': 'noreply@dealzhub.biz', 'subject': 'Reward', 'body': 'You have been selected for a free gift card.', 'received_at': '2026-08-19 08:15:00'}`                  | `spam`   | `low`    | Unsolicited free gift card message from a promotional-looking sender, with no support issue described.                            |
 
 ### `invalid_tickets.csv`
 
 Contains tickets that failed one or more validation rules.
 
-| content | reason |
-|---|---|
-| `{'sender': 'j.torres@brightpath.io', 'subject': '', 'body': 'Charged twice this month for the Pro plan.', 'received_at': '2026-08-19 08:03:00'}` | `['Empty expected field(s).']` |
-| `{'sender': 'info@shopwave.store', 'subject': 'Billing address update', 'body': 'We moved offices, need billing address updated.', 'received_at': ''}` | `['Empty expected field(s).']` |
-| `{'sender': 'priya.n@northline.co', 'subject': 'Quick one', 'body': 'ok', 'received_at': '2026-08-19 10:05:00'}` | ``['`body` field is under 3 characters.']`` |
+| content                                                                                                                                                | reason                                      |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|
+| `{'sender': 'j.torres@brightpath.io', 'subject': '', 'body': 'Charged twice this month for the Pro plan.', 'received_at': '2026-08-19 08:03:00'}`      | `['Empty expected field(s).']`              |
+| `{'sender': 'info@shopwave.store', 'subject': 'Billing address update', 'body': 'We moved offices, need billing address updated.', 'received_at': ''}` | `['Empty expected field(s).']`              |
+| `{'sender': 'priya.n@northline.co', 'subject': 'Quick one', 'body': 'ok', 'received_at': '2026-08-19 10:05:00'}`                                       | ``['`body` field is under 3 characters.']`` |
 
 ### `needs_review.csv`
 
-Contains valid tickets that require manual review because they could not be processed successfully by the OpenAI API or the client-side processing logic.
+Contains valid tickets that require manual review because they could not be processed successfully by the OpenAI API or
+the client-side processing logic.
 
-| content | reason |
-|---|---|
-| `{'sender': 'a.chen@example.com', 'subject': 'Request for account access', 'body': 'Please provide access to the restricted account settings.', 'received_at': '2026-08-19 11:14:00'}` | `['Refusal.']` |
+| content                                                                                                                                                                                                     | reason                                            |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
+| `{'sender': 'a.chen@example.com', 'subject': 'Request for account access', 'body': 'Please provide access to the restricted account settings.', 'received_at': '2026-08-19 11:14:00'}`                      | `['Refusal.']`                                    |
 | `{'sender': 'support@brightpath.io', 'subject': 'Unable to load customer profile', 'body': 'The customer profile request failed repeatedly during troubleshooting.', 'received_at': '2026-08-19 11:37:00'}` | `['APIConnectionError after 4 triage attempts.']` |
-| `{'sender': 'billing@northline.co', 'subject': 'Payment status unavailable', 'body': 'The payment-status request timed out repeatedly during troubleshooting.', 'received_at': '2026-08-19 12:02:00'}` | `['APITimeoutError after 4 triage attempts.']` |
+| `{'sender': 'billing@northline.co', 'subject': 'Payment status unavailable', 'body': 'The payment-status request timed out repeatedly during troubleshooting.', 'received_at': '2026-08-19 12:02:00'}`      | `['APITimeoutError after 4 triage attempts.']`    |
 
 ## Testing
 

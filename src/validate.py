@@ -28,10 +28,7 @@ class TicketValidator:
             self.tickets = [ticket for ticket in self.tickets if id(ticket) not in invalid_ids]
 
     def ensure_expected_fields_present_and_non_empty(self, expected_fields: Tuple[str]) -> None:
-        """
-        Ensure that all expected ticket fields are present and non-empty.
-        :param expected_fields: Fields that must be present in self.tickets.
-        """
+        """Ensure that all expected ticket fields are present and non-empty."""
         empty_count = 0
         missing_count = 0
 
@@ -72,12 +69,8 @@ class TicketValidator:
         if lt_3_chars_count:
             logger.warning(f"Found {lt_3_chars_count} ticket(s) whose `body` field is under 3 characters.")
 
-
     def ensure_valid_received_at_timestamp(self, expected_timestamp_format: str) -> None:
-        """
-        Ensure that the received_at field of a ticket is the expected timestamp format.
-        :param expected_timestamp_format: Expected timestamp format string.
-        """
+        """Ensure that the received_at field of a ticket is the expected timestamp format."""
         readable_timestamp_format = strptime_format_to_iso_8601_template(expected_timestamp_format)
         invalid_timestamp_count = 0
 
@@ -107,4 +100,5 @@ class TicketValidator:
                 self.add_invalid_ticket(ticket, reason_invalid)
 
         if invalid_sender_count:
-            logger.warning(f"Found {invalid_sender_count} ticket(s) whose `sender` field doesn't match an email address' format.")
+            logger.warning(
+                f"Found {invalid_sender_count} ticket(s) whose `sender` field doesn't match an email address' format.")

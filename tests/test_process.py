@@ -2,24 +2,25 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from openai import APIConnectionError
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter,wait_none
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter, wait_none
 
 from process import TriageProcessor, initial_wait, max_wait, stop_count
 
 test_tickets = [{
-"sender": "maria.k@example.com",
-"subject": "Can't log in",
-"body": "I get invalid credentials every time I try.",
-"received_at": "2026-08-19 07:12:00"
-},]
+    "sender": "maria.k@example.com",
+    "subject": "Can't log in",
+    "body": "I get invalid credentials every time I try.",
+    "received_at": "2026-08-19 07:12:00"
+}, ]
+
 
 @retry(
-        wait=wait_exponential_jitter(initial=initial_wait, max=max_wait),
-        stop=stop_after_attempt(stop_count),
-        retry=retry_if_exception_type(APIConnectionError),
-        reraise=True,
-    )
-def make_response_output(refusal: bool=False, fail: bool=False) -> MagicMock | None:
+    wait=wait_exponential_jitter(initial=initial_wait, max=max_wait),
+    stop=stop_after_attempt(stop_count),
+    retry=retry_if_exception_type(APIConnectionError),
+    reraise=True,
+)
+def make_response_output(refusal: bool = False, fail: bool = False) -> MagicMock | None:
     """
     Create a mock response or raise an exception.
     :param refusal: Whether to create a refusal response.
@@ -39,6 +40,7 @@ def make_response_output(refusal: bool=False, fail: bool=False) -> MagicMock | N
     response.output = [output]
     return response
 
+
 @patch("process.client")
 def test_process_tickets_retry_on_transient_error(monkeypatch: pytest.MonkeyPatch) -> None:
     """Ensure process_tickets() retries after transient API connection errors."""
@@ -52,6 +54,7 @@ def test_process_tickets_retry_on_transient_error(monkeypatch: pytest.MonkeyPatc
     stats = make_response_output.statistics
     assert "attempt_number" in stats
     assert stats["attempt_number"] == stop_count
+
 
 @patch("process.client")
 def test_process_tickets_handles_refusal_response(mock_client: MagicMock):

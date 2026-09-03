@@ -22,7 +22,6 @@ def main():
             csv.DictReader(raw_tickets_file)
         )
 
-
     ticket_validator = TicketValidator(raw_support_tickets)
     ticket_validator.ensure_expected_fields_present_and_non_empty(EXPECTED_FIELDS)
     ticket_validator.ensure_body_in_valid_tickets_gte_3_chars()
