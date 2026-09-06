@@ -9,6 +9,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+## [v0.1.4] - 2026-09-06
+
+### Changed
+
+- Moved client instantiation in `triage.py` from the top level into a function.
+
 ## [v0.1.3] - 2026-09-06
 
 ### Added

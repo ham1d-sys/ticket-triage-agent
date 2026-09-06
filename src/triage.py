@@ -12,15 +12,21 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 logger = getLogger(__name__)
 
 load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(
-    api_key=api_key,
-    timeout=900.0,
-)
+_client = None
 
 initial_wait = 1
 max_wait = 10
 stop_count = 4
+
+
+def get_client():
+    global _client
+    if _client is None:
+        _client = OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            timeout=900.0,
+        )
+    return _client
 
 
 class TriageSchema(BaseModel):
@@ -48,7 +54,7 @@ class TriageProcessor:
     )
     def triage_ticket(self, ticket) -> bool:
         """Triage a single ticket using the OpenAI API."""
-        response = client.responses.parse(
+        response = get_client().responses.parse(
             model="gpt-5.6-luna",
             input=[
                 {

@@ -40,11 +40,11 @@ def make_response_output(refusal: bool = False, fail: bool = False) -> MagicMock
     return response
 
 
-@patch("triage.client")
+@patch("triage.get_client")
 def test_triage_ticket_retry_after_transient_error(mock_client, triage_processor: TriageProcessor):
     """Ensure triage_ticket() retries after API connection errors."""
     triage_processor.triage_ticket.retry.wait = wait_none()
-    mock_client.responses.parse.side_effect = APIConnectionError(request=MagicMock())
+    mock_client.return_value.responses.parse.side_effect = APIConnectionError(request=MagicMock())
     with pytest.raises(APIConnectionError):
         triage_processor.triage_ticket(test_tickets[0])
 
@@ -53,20 +53,20 @@ def test_triage_ticket_retry_after_transient_error(mock_client, triage_processor
     assert stats["attempt_number"] == stop_count
 
 
-@patch("triage.client")
+@patch("triage.get_client")
 def test_triage_tickets_abort_after_consecutive_transient_errors(mock_client: MagicMock,
                                                                  triage_processor: TriageProcessor):
     """Ensure triage_tickets() abort current batch after consecutive API connection errors."""
     triage_processor.triage_ticket.retry.wait = wait_none()
-    mock_client.responses.parse.side_effect = APIConnectionError(request=MagicMock())
+    mock_client.return_value.responses.parse.side_effect = APIConnectionError(request=MagicMock())
     with pytest.raises(RetryError):
         triage_processor.triage_tickets()
 
 
-@patch("triage.client")
+@patch("triage.get_client")
 def test_triage_tickets_handles_refusal_response(mock_client: MagicMock, triage_processor: TriageProcessor):
     """Ensure refused tickets are added to TriageProcessor.needs_review with the correct reason."""
-    mock_client.responses.parse.return_value = make_response_output(refusal=True)
+    mock_client.return_value.responses.parse.return_value = make_response_output(refusal=True)
     triage_processor.triage_tickets()
     assert triage_processor.needs_review, "Expected refused ticket to require review."
     assert triage_processor.needs_review[0] == {
