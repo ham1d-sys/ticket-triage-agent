@@ -17,7 +17,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- Fixed a silent-abort bug in the consecutive-error logic by replacing the `any()` check with `all()` and removing the unnecessary outer lists from the slicing comprehensions.
+- Fixed the consecutive-error logic to abort only after `abort_count` consecutive failures instead of any failure after that threshold.
 
 ## [v0.1.2] - 2026-09-06
 
