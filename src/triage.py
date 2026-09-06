@@ -1,44 +1,121 @@
-import logging
+import csv
+import os
+from logging import getLogger
 from pathlib import Path
+from typing import List, Dict
 
-from tenacity import RetryError
+from dotenv import load_dotenv
+from openai import OpenAI, APIConnectionError, APITimeoutError
+from pydantic import BaseModel
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential_jitter, RetryError
 
-from ticket_io import load_support_tickets, write_invalid_tickets
-from process import TriageProcessor
-from validate import TicketValidator
+logger = getLogger(__name__)
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(pathname)s - %(asctime)s - %(message)s")
-logger = logging.getLogger(__name__)
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(
+    api_key=api_key,
+    timeout=900.0,
+)
 
-EXPECTED_FIELDS = ("sender", "subject", "body", "received_at")
-EXPECTED_TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
-support_tickets_path = Path(__file__).resolve().parent.parent / "data" / "input" / "support_tickets.csv"
-output_path = Path(__file__).resolve().parent.parent / "data" / "output"
-
-
-def main():
-    support_tickets = load_support_tickets(support_tickets_path)
-
-    ticket_validator = TicketValidator(support_tickets)
-    ticket_validator.ensure_expected_fields_present_and_non_empty(EXPECTED_FIELDS)
-    ticket_validator.ensure_body_in_valid_tickets_gte_3_chars()
-    ticket_validator.ensure_valid_received_at_timestamp(EXPECTED_TIMESTAMP_FORMAT)
-    ticket_validator.ensure_valid_sender()
-    ticket_validator.cleanup_tickets()
-    valid_tickets = ticket_validator.tickets
-    invalid_tickets = ticket_validator.invalid_tickets
-
-    triage_processor = TriageProcessor(valid_tickets, output_path)
-    try:
-        triage_processor.process_tickets()
-    except RetryError as e:
-        logger.warning(f"{e.__name__}: {e}. Batch aborted.")
-        return
-
-    invalid_tickets_header = ["content", "reason"]
-    write_invalid_tickets(invalid_tickets, invalid_tickets_header, output_path)
-    triage_processor.write_outputs()
+initial_wait = 1
+max_wait = 10
+stop_count = 4
 
 
-if __name__ == "__main__":
-    main()
+class TriageSchema(BaseModel):
+    """Define JSON output schema"""
+    category: str
+    urgency: str
+    reason: str
+
+
+class TriageProcessor:
+    """Triage tickets."""
+
+    def __init__(self, tickets: List[Dict], output_path: Path, abort_count):
+        self.tickets = tickets
+        self.triaged = []
+        self.needs_review = []
+        self.abort_count = abort_count
+        self.output_path = output_path
+
+    @retry(
+        retry=retry_if_exception_type((APIConnectionError, APITimeoutError)),
+        wait=wait_exponential_jitter(initial=initial_wait, max=max_wait),
+        stop=stop_after_attempt(stop_count),
+        reraise=True,
+    )
+    def triage_ticket(self, ticket) -> bool:
+        """Triage a single ticket using the OpenAI API."""
+        response = client.responses.parse(
+            model="gpt-5.6-luna",
+            input=[
+                {
+                    "role": "system",
+                    "content": "You're a support ticket triage assistant. Classify this support ticket into a category (billing / bug / feature_request / spam / other) and an urgency (low / medium / high) with a concise one-line reason.",
+                },
+                {
+                    "role": "user",
+                    "content": f"{ticket}",
+                },
+            ],
+            text_format=TriageSchema,
+            service_tier="flex",
+        )
+        for output in response.output:
+            if output.type != "message":
+                continue
+
+            for item in output.content:
+                if item.type == "refusal":
+                    self.needs_review.append({"content": ticket, "reason": "Refusal."})
+                    return True
+                else:
+                    self.triaged.append({"content": ticket, **response.output_parsed.model_dump()})
+                    return False
+
+        self.needs_review.append({"content": ticket, "reason": "No usable response."})
+        return True
+
+    def triage_tickets(self) -> None:
+        """Triage tickets using the OpenAI API."""
+        unclassified_count = 0
+        failed_retry_count = []
+
+        for ticket in self.tickets:
+            try:
+                unclassified_status = self.triage_ticket(ticket)
+                unclassified_count += unclassified_status
+                failed_retry_count.append(False)
+            except (APIConnectionError, APITimeoutError) as e:
+                failed_retry_count.append(True)
+                if len(failed_retry_count) >= self.abort_count and any([failed_retry_count[-self.abort_count:]]):
+                    raise RetryError(f"Hit {self.abort_count} consecutive API connection or timeout errors")
+
+                unclassified_count += 1
+                self.needs_review.append(
+                    {"content": ticket, "reason": f"{type(e).__name__} after {stop_count} triage attempts."})
+
+        if unclassified_count:
+            logger.warning(f"{unclassified_count} tickets couldn't be classified. Review them in `needs_review.csv`.")
+
+    def write_outputs(self) -> None:
+        """Write self.needs_review and self.triaged to needs_review.csv and triaged.csv, respectively"""
+        if self.needs_review:
+            needs_review_path = self.output_path / "needs_review.csv"
+            with open(needs_review_path, "w", encoding="UTF-8", newline="") as needs_review_file:
+                fieldnames = ["content", "reason"]
+                writer = csv.DictWriter(needs_review_file, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(self.needs_review)
+            logger.info(f"Wrote needs-review tickets to '{needs_review_path}'")
+
+        if self.triaged:
+            triaged_path = self.output_path / "triaged.csv"
+            with open(triaged_path, "w", encoding="UTF-8", newline="") as triaged_file:
+                fieldnames = ["content", "category", "urgency", "reason"]
+                writer = csv.DictWriter(triaged_file, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(self.triaged)
+                logger.info(f"Wrote triage results to '{triaged_path}'")

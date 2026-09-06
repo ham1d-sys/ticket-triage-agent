@@ -4,5 +4,4 @@ content,reason
 "{'sender': 'priya.n@northline.co', 'subject': 'Quick one', 'body': 'ok', 'received_at': '2026-08-19 10:05:00'}",['`body` field is under 3 characters.']
 "{'sender': 'lena.h@studiofive.design', 'subject': 'Annual billing discount', 'body': '   ', 'received_at': '2026-08-19 12:30:00'}",['`body` field is under 3 characters.']
 "{'sender': 'sam.okafor@gmail.com', 'subject': 'Export broken', 'body': 'Export to CSV comes back empty every time.', 'received_at': '19/08/2026 11:47'}",['`received_at` field contains an invalid timestamp.']
-"{'sender': 'dev@quickstartapp', 'subject': 'API errors', 'body': 'Getting 500s on every /orders call for 20 minutes.', 'received_at': '2026-08-19 11:47:00'}",['`sender` field contains an invalid email address.']
-"{'sender': 'random123mailinator.com', 'subject': 'asdkjaslkdj', 'body': 'asldkjaslkdjaslkdj', 'received_at': '2026-08-19 13:02:00'}",['`sender` field contains an invalid email address.']
+"{'sender': 'random123mailinator.com', 'subject': 'asdkjaslkdj', 'body': 'asldkjaslkdjaslkdj', 'received_at': '2026-08-19 13:02:00'}","[""`sender` field doesn't contain a '@' character.""]"

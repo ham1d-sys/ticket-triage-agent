@@ -1,19 +1,20 @@
 # Ticket Triage Agent
 
-An agentic pipeline that validates and triages support tickets using the OpenAI API. Each valid ticket is classified by category
-and urgency, with a short explanation of the decision. Results are exported as CSV files.
+An agentic pipeline that validates and triages support tickets using the OpenAI API. Each valid ticket is classified by
+category and urgency, with a short explanation of the decision. Results are exported as CSV files.
 
 ## How It Works
 
 1. **Load** — Reads support tickets from a CSV file.
 2. **Validate and clean up** — Applies the validation rules to each ticket:
-   - Ensures all expected fields are present and non-empty.
-   - Ensures the body of a valid ticket contains at least 3 characters.
-   - Ensures `received_at` is a valid timestamp.
-   - Ensures the sender is valid.
-   
+    - Ensures all expected fields are present and non-empty.
+    - Ensures the body of a valid ticket contains at least 3 characters.
+    - Ensures `received_at` is a valid timestamp.
+    - Ensures the sender is valid.
+
    Invalid tickets are removed from the in-memory ticket collection and retained for separate reporting.
-3. **Triage** — Sends the remaining valid tickets to the OpenAI API to determine their category, urgency, and triage reason.
+3. **Triage** — Sends the remaining valid tickets to the OpenAI API to determine their category, urgency, and triage
+   reason.
 4. **Write** — Exports triaged tickets, invalid tickets, and valid tickets requiring review to separate CSV files.
 
 ## Prerequisites
@@ -118,8 +119,6 @@ the batch.
 
 ### `triaged.csv`
 
-Contains successfully processed tickets and their triage results.
-
 | content                                                                                                                                                                  | category | urgency  | reason                                                                                                                            |
 |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|----------|-----------------------------------------------------------------------------------------------------------------------------------|
 | `{'sender': 'maria.k@example.com', 'subject': "Can't log in", 'body': 'I get invalid credentials every time I try.', 'received_at': '2026-08-19 07:12:00'}`              | `other`  | `medium` | User is unable to log in due to repeated invalid-credentials errors; no evidence of a product bug beyond an authentication issue. |
@@ -128,8 +127,6 @@ Contains successfully processed tickets and their triage results.
 
 ### `invalid_tickets.csv`
 
-Contains tickets that failed one or more validation rules.
-
 | content                                                                                                                                                | reason                                      |
 |--------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------|
 | `{'sender': 'j.torres@brightpath.io', 'subject': '', 'body': 'Charged twice this month for the Pro plan.', 'received_at': '2026-08-19 08:03:00'}`      | `['Empty expected field(s).']`              |
@@ -137,9 +134,6 @@ Contains tickets that failed one or more validation rules.
 | `{'sender': 'priya.n@northline.co', 'subject': 'Quick one', 'body': 'ok', 'received_at': '2026-08-19 10:05:00'}`                                       | ``['`body` field is under 3 characters.']`` |
 
 ### `needs_review.csv`
-
-Contains valid tickets that require manual review because they could not be processed successfully by the OpenAI API or
-the client-side processing logic.
 
 | content                                                                                                                                                                                                     | reason                                            |
 |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
@@ -153,10 +147,4 @@ Run the test suite with:
 
 ```bash
 pytest
-```
-
-To see more detailed test output:
-
-```bash
-pytest -v
 ```

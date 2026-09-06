@@ -1,5 +1,4 @@
 import logging
-import re
 from datetime import datetime as dt
 from typing import Dict, List, Tuple
 
@@ -92,14 +91,14 @@ class TicketValidator:
 
     def ensure_valid_sender(self) -> None:
         """Ensure that the sender field of a ticket contains valid email address."""
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         invalid_sender_count = 0
 
         for ticket in self.tickets:
             sender = ticket.get("sender")
-            if not bool(re.match(pattern, sender)):
-                reason_invalid = f"`sender` field contains an invalid email address."
+            if not "@" in set(sender):
+                reason_invalid = f"`sender` field doesn't contain a '@' character."
                 self.add_invalid_ticket(ticket, reason_invalid)
+                invalid_sender_count += 1
 
         if invalid_sender_count:
             logger.warning(
