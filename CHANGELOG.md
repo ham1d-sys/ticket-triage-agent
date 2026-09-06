@@ -9,6 +9,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+## [v0.1.3] - 2026-09-06
+
+### Added
+
+- Added pyproject.toml
+
+### Fixed
+
+- Fixed a silent-abort bug in the consecutive-error logic by replacing the `any()` check with `all()` and removing the unnecessary outer lists from the slicing comprehensions.
+
 ## [v0.1.2] - 2026-09-06
 
 ### Changed
@@ -19,7 +29,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
-- Fixed an `AttributeError` in `triage.py` and `process.py` caused by incorrectly calling `.__name__` on an exception
+- Fixed an `AttributeError` in `main.py` and `triage.py` caused by incorrectly calling `.__name__` on an exception
   instance.
 - Fixed an issue that prevented the `@retry` decorator from being triggered by applying it to the function that triages
   a single ticket instead of the former batch-processing function.

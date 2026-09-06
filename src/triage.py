@@ -90,7 +90,7 @@ class TriageProcessor:
                 failed_retry_count.append(False)
             except (APIConnectionError, APITimeoutError) as e:
                 failed_retry_count.append(True)
-                if len(failed_retry_count) >= self.abort_count and any([failed_retry_count[-self.abort_count:]]):
+                if len(failed_retry_count) >= self.abort_count and all(failed_retry_count[-self.abort_count:]):
                     raise RetryError(f"Hit {self.abort_count} consecutive API connection or timeout errors")
 
                 unclassified_count += 1

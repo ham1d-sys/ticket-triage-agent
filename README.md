@@ -19,7 +19,7 @@ category and urgency, with a short explanation of the decision. Results are expo
 
 ## Prerequisites
 
-- Python 3.x
+- Python 3.14 or newer
 - An OpenAI API key
 
 You can create an API key from the [OpenAI dashboard](https://platform.openai.com/settings/organization/api-keys).
